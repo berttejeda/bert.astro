@@ -8,7 +8,7 @@ module.exports = {
     ['remark-lint-ordered-list-marker-style', '.'], // Enforce `1.` style
     ['remark-lint-final-newline', true], // Require final newline at EOF,
     // [require.resolve('./scripts/lint-rules/remark-lint-sections.js')],
-    [require.resolve('./scripts/lint-rules/remark-lint-service-doc-structure.js'), { schemaPath: './scripts/lint-rules/service-doc-structure-schema.json' }],
+    [require.resolve('./scripts/lint-rules/remark-lint-service-doc-structure.js'), { schemaPath: './scripts/lint-rules/service-doc-structure-schema.yaml', ruleId: 'custom-runbook-rule'}],
     [require.resolve('./scripts/lint-rules/remark-lint-no-grafana-uuid-links.js')],
   ],
 };

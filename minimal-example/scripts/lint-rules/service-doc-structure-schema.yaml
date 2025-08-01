@@ -1,0 +1,38 @@
+allowChildrenToSatisfyNonEmpty: true
+contentNodeTypes:
+  - paragraph
+  - code
+  - list
+enforceOrder: true
+sections:
+  - titlePattern: Overview
+    nonEmpty: true
+    required: true
+    description: |-
+      This section should provide a high-level description of the service.
+  - titlePattern: Change Process
+    nonEmpty: true
+    required: true
+    description: |-
+      This section should instruct the MOP operator on how to deploy the service.
+      e.g.
+      My service does this
+    children:
+      - titlePattern: Deployment
+        nonEmpty: true
+        required: true
+        description: |-
+          This sub-section should cover the service deployment phase.
+      - titlePattern: Validation
+        nonEmpty: true
+        required: true
+        description: |-
+          This sub-section should cover the post-deployment validation phase.
+          e.g.
+          This is how to validate
+  - titlePattern: Appendix
+    allowChildrenToSatisfyNonEmpty: true
+    nonEmpty: true
+    required: true
+    description: |-
+      Place any miscellaneous instructions in this section

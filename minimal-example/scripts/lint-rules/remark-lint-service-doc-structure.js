@@ -1,6 +1,7 @@
 import { visit } from 'unist-util-visit';
 import fs from 'fs';
 import debugLib from 'debug';
+import YAML from 'yaml';
 
 const debug = debugLib('remark:lint-structure');
 
@@ -102,7 +103,8 @@ function validateSections(
   path = '',
   enforceOrder = false,
   globalAllowChildren = false,
-  contentNodeTypes = new Set(['paragraph', 'list', 'code', 'blockquote', 'table'])
+  contentNodeTypes = new Set(['paragraph', 'list', 'code', 'blockquote', 'table']),
+  ruleId
 ) {
   let i = 0;
   let j = 0;
@@ -134,7 +136,7 @@ function validateSections(
           hasValidContent || (allowChildren && hasChildren);
 
         if (!satisfiesNonEmpty) {
-          file.message(`Section "${path}${expectedName}" must not be empty.`);
+          file.message(`Section "${path}${expectedName}" must not be empty.`, null, ruleId);
         }
       }
 
@@ -147,7 +149,8 @@ function validateSections(
           path + expectedName + ' > ',
           schemaSection.enforceOrder ?? enforceOrder,
           globalAllowChildren,
-          contentNodeTypes
+          contentNodeTypes,
+          ruleId
         );
       }
 
@@ -155,13 +158,13 @@ function validateSections(
       j++;
     } else {
       if (schemaSection.required) {
-        file.message(`Missing required section: ${path}${expectedName}`);
+        file.message(`Missing required section: ${path}${expectedName}: ${schemaSection.description ? ` - ${schemaSection.description}` : ''}`, null, ruleId);
       }
       if (enforceOrder && current && !matchesHeading(current, schemaSection)) {
         file.message(
           `Section "${current.title}" is out of order. Expected "${expectedName}" at ${
             path || 'root level'
-          }.`
+          }.`, null, ruleId
         );
       }
       j++;
@@ -174,7 +177,21 @@ function validateSections(
  */
 export default function remarkLintStructure(options = {}) {
   const schemaPath = options.schemaPath || './doc-structure-schema.json';
-  const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
+  const ruleId = options.ruleId || 'n/a';
+
+  const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
+  // Remove BOM if present
+  if (schemaContent.charCodeAt(0) === 0xfeff) {
+    schemaContent = schemaContent.slice(1);
+  }
+
+  let schema;
+
+  if (schemaPath.endsWith('.yaml') || schemaPath.endsWith('.yml')) {
+    schema = YAML.parse(schemaContent);
+  } else {
+    schema = JSON.parse(schemaContent);
+  }  
 
   if (!schema.sections || !Array.isArray(schema.sections)) {
     throw new Error('Invalid schema: Must define "sections" array');
@@ -197,7 +214,8 @@ export default function remarkLintStructure(options = {}) {
       '',
       schema.enforceOrder ?? false,
       globalAllowChildren,
-      contentNodeTypes
+      contentNodeTypes,
+      ruleId
     );
   };
 }

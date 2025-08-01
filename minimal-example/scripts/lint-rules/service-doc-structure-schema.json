@@ -1,0 +1,35 @@
+{
+  "enforceOrder": true,
+  "allowChildrenToSatisfyNonEmpty": true,
+  "contentNodeTypes": ["paragraph", "code", "list"], 
+  "sections": [
+    {
+      "titlePattern": "Overview",
+      "required": true,
+      "nonEmpty": true
+    },
+    {
+      "titlePattern": "Change Process",
+      "required": true,
+      "nonEmpty": true,
+      "children": [
+        {
+          "titlePattern": "Deployment",
+          "required": true,
+          "nonEmpty": true
+        },
+        {
+          "titlePattern": "Validation",
+          "required": true,
+          "nonEmpty": true
+        }
+      ]    
+    },
+    {
+      "titlePattern": "Appendix",
+      "required": true,
+      "nonEmpty": true,
+      "allowChildrenToSatisfyNonEmpty": true
+    }    
+  ]
+}

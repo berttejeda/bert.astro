@@ -1,0 +1,20 @@
+# .remarkignore
+
+# Ignore caches and build dirs
+node_modules
+dist
+
+# Ignore common js files
+
+.eslintrc.cjs
+.remarkrc.cjs
+
+# Ignore all markdown by default
+
+*.md
+*.mdx
+
+## But allow Runbook*.md / Runbook*.mdx
+
+!Service*.md
+!Service*.mdx

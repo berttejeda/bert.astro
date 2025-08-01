@@ -1,0 +1,37 @@
+---
+title: Hello World Service Page
+layout: ../layouts/BaseLayout.astro
+---
+
+# Overview
+
+This service is responsible for the following:
+
+- Say Hello World whenever a request is made to its /hello API endpoint
+
+# Change Process
+
+## Deployment
+
+Run the following to install:
+
+```bash
+npm install
+npm start
+```
+
+## Validation
+
+- Check Service Health
+  ```shell
+  curl http://{{ service_fqdn }}/api/v2/hello
+  ````
+
+# Appendix
+
+## Common Commands
+
+- Reload service config
+  ```shell
+  curl http://{{ service_fqdn }}/api/v2/reload
+  ````

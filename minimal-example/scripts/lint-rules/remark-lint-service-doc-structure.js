@@ -1,13 +1,10 @@
 import { visit } from 'unist-util-visit';
 import fs from 'fs';
-import debugLib from 'debug';
 import YAML from 'yaml';
+import debugLib from 'debug';
 
 const debug = debugLib('remark:lint-structure');
 
-/**
- * Extract heading text from a heading node.
- */
 function getHeadingText(node) {
   return node.children
     .filter((child) => child.type === 'text')
@@ -16,9 +13,6 @@ function getHeadingText(node) {
     .trim();
 }
 
-/**
- * Extract visible text from any node (paragraphs, code, list items, etc.).
- */
 function getNodeText(node) {
   if (node.children) {
     return node.children
@@ -33,15 +27,12 @@ function getNodeText(node) {
   return '';
 }
 
-/**
- * Build hierarchical tree of headings and associate meaningful content.
- */
 function buildHeadingTree(tree) {
   const headings = [];
   const stack = [];
 
   visit(tree, (node, index, parent) => {
-    if (node.type === 'yaml') return; // Ignore frontmatter
+    if (node.type === 'yaml') return;
 
     if (node.type === 'heading') {
       const text = getHeadingText(node);
@@ -49,10 +40,13 @@ function buildHeadingTree(tree) {
         title: text,
         depth: node.depth,
         children: [],
-        content: []
+        content: [],
+        // Normalize position to { line, column }
+        position: node.position?.start
+          ? { line: node.position.start.line, column: node.position.start.column }
+          : null
       };
 
-      // Pop higher/equal depth headings from stack
       while (stack.length && stack[stack.length - 1].depth >= node.depth) {
         stack.pop();
       }
@@ -66,10 +60,7 @@ function buildHeadingTree(tree) {
         stack.push(newHeading);
       }
     } else {
-      // Skip children of heading nodes (like text nodes inside headings)
       if (parent && parent.type === 'heading') return;
-
-      // Attach content to current heading (if any)
       if (stack.length > 0) {
         stack[stack.length - 1].content.push(node);
       }
@@ -79,9 +70,6 @@ function buildHeadingTree(tree) {
   return headings;
 }
 
-/**
- * Determine if heading matches schema (title or regex pattern).
- */
 function matchesHeading(heading, schemaSection) {
   if (schemaSection.titlePattern) {
     const regex = new RegExp(schemaSection.titlePattern, 'i');
@@ -93,9 +81,6 @@ function matchesHeading(heading, schemaSection) {
   return false;
 }
 
-/**
- * Validate sections recursively against schema.
- */
 function validateSections(
   file,
   sections,
@@ -104,7 +89,7 @@ function validateSections(
   enforceOrder = false,
   globalAllowChildren = false,
   contentNodeTypes = new Set(['paragraph', 'list', 'code', 'blockquote', 'table']),
-  ruleId
+  ruleId = 'remark-lint-structure'
 ) {
   let i = 0;
   let j = 0;
@@ -115,17 +100,15 @@ function validateSections(
     const expectedName = schemaSection.title || schemaSection.titlePattern;
 
     if (current && matchesHeading(current, schemaSection)) {
-      // Determine allowChildrenToSatisfyNonEmpty (section overrides global)
       const allowChildren =
         schemaSection.allowChildrenToSatisfyNonEmpty ?? globalAllowChildren;
 
-      // Debug: log content nodes
       debug(`Checking section "${path}${expectedName}"`);
       current.content.forEach((node, index) => {
         debug(`  [${index}] type = ${node.type}, text = "${getNodeText(node)}"`);
       });
 
-      // Check nonEmpty rule
+      // Non-empty validation
       if (schemaSection.nonEmpty) {
         const hasValidContent = current.content.some((node) =>
           contentNodeTypes.has(node.type)
@@ -136,7 +119,13 @@ function validateSections(
           hasValidContent || (allowChildren && hasChildren);
 
         if (!satisfiesNonEmpty) {
-          file.message(`Section "${path}${expectedName}" must not be empty.`, null, ruleId);
+          file.message(
+            `Section "${path}${expectedName}" must not be empty.${
+              schemaSection.description ? ` — ${schemaSection.description}` : ''
+            }`,
+            current.position || null,
+            ruleId
+          );
         }
       }
 
@@ -157,41 +146,63 @@ function validateSections(
       i++;
       j++;
     } else {
+      // Missing section
       if (schemaSection.required) {
-        file.message(`Missing required section: ${path}${expectedName}: ${schemaSection.description ? ` - ${schemaSection.description}` : ''}`, null, ruleId);
+        file.message(
+          `Missing required section: ${path}${expectedName}${
+            schemaSection.description ? ` — ${schemaSection.description}` : ''
+          }`,
+          null, // No position -> appears as 0,0 in CSV
+          ruleId
+        );
       }
+
+      // Out-of-order section
       if (enforceOrder && current && !matchesHeading(current, schemaSection)) {
         file.message(
           `Section "${current.title}" is out of order. Expected "${expectedName}" at ${
             path || 'root level'
-          }.`, null, ruleId
+          }.${schemaSection.description ? ` — ${schemaSection.description}` : ''}`,
+          current.position || null,
+          ruleId
         );
       }
+
       j++;
     }
   }
 }
 
-/**
- * Remark-lint plugin entrypoint.
- */
 export default function remarkLintStructure(options = {}) {
-  const schemaPath = options.schemaPath || './doc-structure-schema.json';
-  const ruleId = options.ruleId || 'n/a';
+  const schemaPath = options.schemaPath || './doc-structure-schema.yaml';
+  let schemaContent = fs.readFileSync(schemaPath, 'utf-8');
 
-  const schemaContent = fs.readFileSync(schemaPath, 'utf-8');
   // Remove BOM if present
   if (schemaContent.charCodeAt(0) === 0xfeff) {
     schemaContent = schemaContent.slice(1);
   }
 
+  // Parse YAML or JSON
   let schema;
-
   if (schemaPath.endsWith('.yaml') || schemaPath.endsWith('.yml')) {
     schema = YAML.parse(schemaContent);
   } else {
     schema = JSON.parse(schemaContent);
-  }  
+  }
+
+  // Normalize dashes in descriptions
+  function normalizeDescriptions(sections) {
+    if (!sections) return;
+    for (const sec of sections) {
+      if (sec.description) {
+        sec.description = sec.description.replace(/\u2013|\u2014/g, '-').replace(/,/g, '');
+      }
+      if (sec.children) {
+        normalizeDescriptions(sec.children);
+      }
+    }
+  }
+  normalizeDescriptions(schema.sections);
 
   if (!schema.sections || !Array.isArray(schema.sections)) {
     throw new Error('Invalid schema: Must define "sections" array');
@@ -200,10 +211,11 @@ export default function remarkLintStructure(options = {}) {
   const globalAllowChildren =
     schema.allowChildrenToSatisfyNonEmpty ?? false;
 
-  // Allow schema to define content node types, fallback to default
   const contentNodeTypes = new Set(
     schema.contentNodeTypes || ['paragraph', 'list', 'code', 'blockquote', 'table']
   );
+
+  const ruleId = options.ruleId || 'remark-lint-structure';
 
   return (tree, file) => {
     const headingTree = buildHeadingTree(tree);

@@ -1,8 +1,10 @@
-allowChildrenToSatisfyNonEmpty: true
+allowChildrenToSatisfyNonEmpty: false
 contentNodeTypes:
-  - paragraph
+  - blockquote
   - code
   - list
+  - paragraph
+  - table
 enforceOrder: true
 sections:
   - titlePattern: Overview
@@ -10,29 +12,51 @@ sections:
     required: true
     description: |-
       This section should provide a high-level description of the service.
+      Example:
+      
+      # Overview
+
+      This service is responsible for queuing messages for delivery to downstream message subscribers.
+
   - titlePattern: Change Process
     nonEmpty: true
+    allowChildrenToSatisfyNonEmpty: true
     required: true
     description: |-
-      This section should instruct the MOP operator on how to deploy the service.
-      e.g.
-      My service does this
+      This section should contain the Change Process and Post-Deployment Validation sections.
+      Example:
+
+      # Change Process
+
+      ...
+
+      # Post-Deployment Validation
+
+      ...
+
     children:
       - titlePattern: Deployment
         nonEmpty: true
         required: true
         description: |-
-          This sub-section should cover the service deployment phase.
-      - titlePattern: Validation
+          This sub-section should provide instructions on how to deploy the service.
+          Example:
+
+          # Change Process
+
+          1. Run kubectl apply -f deployment.yaml
+      - titlePattern: Post-Deployment Validation
         nonEmpty: true
         required: true
         description: |-
           This sub-section should cover the post-deployment validation phase.
-          e.g.
-          This is how to validate
+          Example:
+
+          # Post-Deployment Validation
+          1. curl http://{{ service_fqdn }}/healthz
   - titlePattern: Appendix
-    allowChildrenToSatisfyNonEmpty: true
     nonEmpty: true
+    allowChildrenToSatisfyNonEmpty: true
     required: true
     description: |-
       Place any miscellaneous instructions in this section

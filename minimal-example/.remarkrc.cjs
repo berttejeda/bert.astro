@@ -1,4 +1,8 @@
 module.exports = {
+  settings: {
+    csvOutputFile: './lint-results.csv',
+    includePosition: false // set to true to include line/column, false to exclude
+  },  
   plugins: [
     'remark-frontmatter',
     'remark-lint-heading-increment',

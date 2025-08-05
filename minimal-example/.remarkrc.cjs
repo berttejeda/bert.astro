@@ -1,7 +1,9 @@
 module.exports = {
   settings: {
-    csvOutputFile: './lint-results.csv',
-    includePosition: false // set to true to include line/column, false to exclude
+    csvOutputDir: './lint-reports', // Where CSVs are saved
+    includePosition: false,         // set to true to include line/column, false to exclude
+    splitPerFile: true,             // Generate one CSV per reviewed file
+    createSummary: true             // Generate summary.csv with counts    
   },  
   plugins: [
     'remark-frontmatter',

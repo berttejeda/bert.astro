@@ -1,0 +1,31 @@
+---
+import Toc from '../components/Toc.svelte';
+const { title = 'Demo' } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <style>
+      :root { color-scheme: light dark; }
+      html { scroll-behavior: smooth; } /* optional; Melt defaults to smooth too */
+      body { margin: 0; font-family: system-ui, sans-serif; line-height: 1.6; }
+      .wrap { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; padding: 1.5rem; }
+      @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+      #content :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top: 1rem; }
+      pre { background: #0b1020; color: #e5e7eb; padding: .75rem; border-radius: .5rem; overflow: auto; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+<Toc client:load selector="#content" exclude={['h1']} activeType="lowest" />
+<main id="content">
+  <slot />
+</main>
+    </div>
+  </body>
+</html>

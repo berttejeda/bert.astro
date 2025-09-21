@@ -1,0 +1,37 @@
+---
+layout: ../layouts/Base.astro
+title: "Sites filter demo"
+sites:
+  - All
+  - SiteA
+  - SiteB
+  - SiteC
+---
+
+import Sites from "../components/Sites.svelte";
+
+# Demo
+
+<Sites items={frontmatter.sites} client:load />
+
+<h2 class="DN_SiteA" id="site-a-1">Site A - Section 1</h2>
+Site A Section 1 Content
+
+<h2 class="DN_SiteB" id="site-b-1">Site B - Section 1</h2>
+<p>Site B Section 1 Content</p>
+
+<h2 class="DN_SiteA" id="site-a-2">Site A - Section 2</h2>
+<p>Site A Section 2 Content</p>
+
+<h2 class="DN_SiteB" id="site-b-2">Site B - Section 2</h2>
+<p>Site B Section 2 Content</p>
+
+<h3 class="DN_SiteB" id="site-b-2-1">Site B - Section 2 - Subsection 1</h3>
+<p>Site B Section 2 Subsection 1 Content</p>
+
+<h2 class="DN_SiteC" id="site-c-1">Site C - Section 1</h2>
+<p>Site C Section 1 Content</p>
+
+## This is a global section [DN:SiteA] [id:global-a-1]
+
+Test Section

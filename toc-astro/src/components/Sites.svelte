@@ -13,7 +13,6 @@
 
   const STORAGE_KEY = 'siteFilter';
   const dispatch = createEventDispatcher<{ change: string }>();
-
   type Section = {
     site: string | null;       // "SiteA" | "SiteB" | ... | null (global)
     elements: HTMLElement[];   // heading + siblings until next heading

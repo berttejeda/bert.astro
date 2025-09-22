@@ -2,10 +2,12 @@
 layout: ../layouts/Base.astro
 title: "Sites filter demo"
 sites:
-  - All
-  - SiteA
-  - SiteB
-  - SiteC
+  - Global:
+    - All
+  - Restricted:
+    - SiteA
+    - SiteB
+    - SiteC
 ---
 
 import HeadingMarkers from "../components/HeadingMarkers.svelte";

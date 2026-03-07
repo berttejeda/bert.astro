@@ -3,9 +3,43 @@
 
 import { url } from '../lib/data.js';
 
+import SidebarDynamicMenu from './SidebarDynamicMenu.astro';
+
 const pathname = Astro.url.pathname;
 const isGroupActive = (group) => pathname.includes(`/${group}/`);
 const isActive = (path) => path ? pathname.includes(`/${path}`) : pathname === '/';
+
+const pagesGlob = await Astro.glob('../pages/pages/**/*.{mdx,astro}');
+const pageTree: any = {};
+
+for (const page of pagesGlob) {
+	if (!page.url) continue;
+	
+	const urlStr = page.url.replace(/^\//, ''); 
+	const parts = urlStr.split('/').slice(1); 
+	
+	let current = pageTree;
+	for (let i = 0; i < parts.length - 1; i++) {
+		const part = parts[i];
+		if (!current[part]) {
+			current[part] = { isDir: true, name: part, children: {} };
+		}
+		current = current[part].children;
+	}
+	const lastPart = parts[parts.length - 1];
+	
+	let title = page.frontmatter?.title;
+	if (!title) {
+		title = lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
+		title = title.replace(/-/g, ' ');
+	}
+	
+	current[lastPart] = {
+		isDir: false,
+		name: title,
+		url: urlStr,
+	};
+}
 ---
 
 <!-- TODO: Dynamic dropdowns -->
@@ -260,34 +294,7 @@ const isActive = (path) => path ? pathname.includes(`/${path}`) : pathname === '
 							>
 						</button>
 						<ul id="dropdown-pages" class={`${isGroupActive('pages') ? '' : 'hidden'} py-2 space-y-2`}>
-							<li>
-								<a
-									href={url('pages/pricing')}
-									class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-									>Pricing</a
-								>
-							</li>
-							<li>
-								<a
-									href={url('pages/maintenance')}
-									class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-									>Maintenance</a
-								>
-							</li>
-							<li>
-								<a
-									href={url('pages/404')}
-									class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-									>404 not found</a
-								>
-							</li>
-							<li>
-								<a
-									href={url('pages/500')}
-									class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
-									>500 server error</a
-								>
-							</li>
+							<SidebarDynamicMenu items={pageTree} />
 						</ul>
 					</li>
 					<li>

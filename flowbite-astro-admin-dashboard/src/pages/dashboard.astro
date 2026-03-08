@@ -1,4 +1,11 @@
 ---
+import { getSession } from 'auth-astro/server';
+
+const session = await getSession(Astro.request);
+if (!session) {
+	return Astro.redirect('/authentication/sign-in');
+}
+
 import LayoutSidebar from '../app/LayoutSidebar.astro';
 import DashBoard from '../modules/DashBoard.astro';
 ---

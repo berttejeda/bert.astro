@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  auth-astro@3.0.1:
+    hash: 1ec451e8adb385679c9f63af33063c9dbb53be720580d13d0b90b7e0a13362ab
+    path: patches/auth-astro@3.0.1.patch
+
 importers:
 
   .:
@@ -31,7 +36,7 @@ importers:
         version: 2.10.15(sharp@0.34.5)
       auth-astro:
         specifier: ^3.0.1
-        version: 3.0.1(@auth/core@0.5.1)(astro@2.10.15(sharp@0.34.5))(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 3.0.1(patch_hash=1ec451e8adb385679c9f63af33063c9dbb53be720580d13d0b90b7e0a13362ab)(@auth/core@0.5.1)(astro@2.10.15(sharp@0.34.5))(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       flowbite:
         specifier: ^2.1.1
         version: 2.5.2(rollup@4.59.0)
@@ -5223,7 +5228,7 @@ snapshots:
 
   async-function@1.0.0: {}
 
-  auth-astro@3.0.1(@auth/core@0.5.1)(astro@2.10.15(sharp@0.34.5))(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  auth-astro@3.0.1(patch_hash=1ec451e8adb385679c9f63af33063c9dbb53be720580d13d0b90b7e0a13362ab)(@auth/core@0.5.1)(astro@2.10.15(sharp@0.34.5))(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@auth/core': 0.5.1
       astro: 2.10.15(sharp@0.34.5)

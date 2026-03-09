@@ -1,0 +1,50 @@
+diff --git a/server.ts b/server.ts
+index 1bb175df66148e87e2837e75fc0135401866f3f9..96868ac7585a8008c0d5516f7468654a08cf9f7d 100644
+--- a/server.ts
++++ b/server.ts
+@@ -41,21 +41,10 @@ const actions: AuthAction[] = [
+ ]
+ 
+ // solves the same issue that exists in @auth/solid-js
+-const getSetCookieCallback = (cook?: string | null): Cookie | undefined => {
++const getSetCookieCallback = (cook?: string | null): Cookie[] | undefined => {
+ 	if (!cook) return
+ 	const splitCookie = splitCookiesString(cook)
+-	for (const cookName of [
+-		'__Secure-next-auth.session-token',
+-		'next-auth.session-token',
+-		'next-auth.pkce.code_verifier',
+-		'__Secure-next-auth.pkce.code_verifier',
+-	]) {
+-		const temp = splitCookie.find((e) => e.startsWith(`${cookName}=`))
+-		if (temp) {
+-			return parseString(temp)
+-		}
+-	}
+-	return parseString(splitCookie?.[0] ?? '') // just return the first cookie if no session token is found
++	return splitCookie.map((c) => parseString(c))
+ }
+ 
+ function AstroAuthHandler(prefix: string, options = authConfig) {
+@@ -67,12 +56,15 @@ function AstroAuthHandler(prefix: string, options = authConfig) {
+ 
+ 		const res = await Auth(request, options)
+ 		if (['callback', 'signin', 'signout'].includes(action)) {
+-			const parsedCookie = getSetCookieCallback(res.clone().headers.get('Set-Cookie'))
+-			if (parsedCookie) {
+-				res.headers.set(
+-					'Set-Cookie',
+-					serialize(parsedCookie.name, parsedCookie.value, parsedCookie as any)
+-				)
++			const parsedCookies = getSetCookieCallback(res.clone().headers.get('Set-Cookie'))
++			if (parsedCookies) {
++				res.headers.delete('Set-Cookie')
++				for (const parsedCookie of parsedCookies) {
++					res.headers.append(
++						'Set-Cookie',
++						serialize(parsedCookie.name, parsedCookie.value, parsedCookie as any)
++					)
++				}
+ 			}
+ 		}
+ 		return res

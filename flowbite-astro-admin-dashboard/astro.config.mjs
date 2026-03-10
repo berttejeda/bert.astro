@@ -10,12 +10,14 @@ import node from '@astrojs/node';
 import auth from 'auth-astro';
 
 const DEV_PORT = 2121;
+const defaultSiteUrl = process.env.SITE_URL || SITE_URL || AUTH_URL || `http://localhost:${DEV_PORT}`;
+const allowedHost = defaultSiteUrl.includes('://') ? new URL(defaultSiteUrl).hostname : defaultSiteUrl;
 
 // https://astro.build/config
 export default defineConfig({
 	site: process.env.CI
 		? 'https://themesberg.github.io'
-		: process.env.SITE_URL || SITE_URL || AUTH_URL || `http://localhost:${DEV_PORT}`,
+		: defaultSiteUrl,
 	base: process.env.CI ? '/flowbite-astro-admin-dashboard' : undefined,
 
 	output: 'server',
@@ -40,7 +42,7 @@ export default defineConfig({
 	],
 	vite: {
 		server: {
-			allowedHosts: ['dashboard.leh.tejedas.net']
+			allowedHosts: [allowedHost]
 		},
 		build: {
 			rollupOptions: {

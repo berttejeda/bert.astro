@@ -6,6 +6,12 @@ import { asset } from '../lib/data.js';
 import ColorModeSwitcher from '../components/ColorModeSwitcher.astro';
 import GitHubButton from '../components/GitHubButton.astro';
 import SearchInput from '../components/SearchInput.astro';
+
+import { getSession } from 'auth-astro/server';
+
+const session = await getSession(Astro.request);
+const groups = (session?.user as any)?.groups || [];
+const userRole = groups.includes('admins') ? 'Admin' : groups.includes('dev') ? 'Developer' : 'User';
 ---
 
 <nav
@@ -115,7 +121,7 @@ import SearchInput from '../components/SearchInput.astro';
 					<div class="py-2">
 						<a
 							href="#"
-							class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white"
+							class="logout-link block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white"
 							>Sign out</a
 						>
 					</div>
@@ -554,7 +560,7 @@ import SearchInput from '../components/SearchInput.astro';
 						</a>
 						<a
 							href="#"
-							class="block p-4 text-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
+							class="logout-link block p-4 text-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
 						>
 							<svg
 								class="mx-auto mb-1 text-gray-500 w-7 h-7 dark:text-gray-400"
@@ -591,7 +597,7 @@ import SearchInput from '../components/SearchInput.astro';
 							<span class="sr-only">Open user menu</span>
 							<img
 								class="w-8 h-8 rounded-full"
-								src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+								src={session?.user?.image || "https://flowbite.com/docs/images/people/profile-picture-5.jpg"}
 								alt="user photo"
 							/>
 						</button>
@@ -603,14 +609,19 @@ import SearchInput from '../components/SearchInput.astro';
 					>
 						<div class="px-4 py-3" role="none">
 							<p class="text-sm text-gray-900 dark:text-white" role="none">
-								Neil Sims
+								{session?.user?.name || "Guest User"}
 							</p>
 							<p
 								class="text-sm font-medium text-gray-900 truncate dark:text-gray-300"
 								role="none"
 							>
-								neil.sims@flowbite.com
+								{session?.user?.email || "guest@example.com"}
 							</p>
+							{groups.length > 0 && (
+								<p class="text-xs text-secondary-500 mt-1.5 font-semibold tracking-wide uppercase dark:text-gray-400" role="none">
+									{userRole}
+								</p>
+							)}
 						</div>
 						<ul class="py-1" role="none">
 							<li>
@@ -637,7 +648,7 @@ import SearchInput from '../components/SearchInput.astro';
 							<li>
 								<a
 									href="#"
-									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+									class="logout-link block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
 									role="menuitem">Sign out</a
 								>
 							</li>
@@ -648,3 +659,15 @@ import SearchInput from '../components/SearchInput.astro';
 		</div>
 	</div>
 </nav>
+
+<script>
+	const { signOut } = await import('auth-astro/client');
+	const logoutLinks = document.querySelectorAll('.logout-link');
+	
+	logoutLinks.forEach((link) => {
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			signOut();
+		});
+	});
+</script>

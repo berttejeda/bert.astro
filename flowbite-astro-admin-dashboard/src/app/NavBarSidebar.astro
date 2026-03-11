@@ -2,6 +2,7 @@
 /* eslint max-lines: 'off' */
 
 import { asset } from '../lib/data.js';
+import avatarGuest from '../assets/avatar-guest.png';
 
 import ColorModeSwitcher from '../components/ColorModeSwitcher.astro';
 import GitHubButton from '../components/GitHubButton.astro';
@@ -631,7 +632,7 @@ const userRole = groups.includes('admins') ? 'Admin' : groups.includes('dev') ? 
 							<span class="sr-only">Open user menu</span>
 							<img
 								class="w-8 h-8 rounded-full"
-								src={session?.user?.image || "https://flowbite.com/docs/images/people/profile-picture-5.jpg"}
+								src={session?.user?.image || avatarGuest}
 								alt="user photo"
 							/>
 						</button>
